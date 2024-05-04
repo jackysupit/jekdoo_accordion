@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="jekdoo_accordion.ListRenderer.RecordRow" owl="1">
+        <t t-foreach="getColumns(record)" t-as="column" t-key="column.id">
+            <div class="card accordion-child" t-if="column.name == 'notes'">
+                <div t-on-click="(e)=> this.onHeaderClick(e, record)" class="card-header cursor-pointer" t-ref="cardHeader"  t-att-class="{'card-header-show': record.data.is_open}">
+                    <h5 class="mb-0 item-title">
+                        <button class="btn btn-link">
+                            <t t-esc="record.data.name"/>
+                        </button>
+                    </h5>
+                    <i class="icon-arrow fa fa-angle-up"/>
+                </div>
+
+                <div class="collapse" t-att-class="{'show': record.data.is_open}">
+                    <div class="card-body">
+                        <Field name="column.name" record="record" type="column.widget" class="d-inline-block" 
+                            fieldInfo="props.archInfo.fieldNodes[column.name]" readonly="true"/>
+
+                        <div class="button-wrapper">
+                            <button class="btn btn-sm btn-primary" 
+                                t-on-click="(ev) => this.onCellClicked(record, column, ev)">Edit</button>
+
+                            <t t-set="useUnlink" t-value="'unlink' in activeActions" />
+                            <t t-set="hasX2ManyAction" t-value="isX2Many and (useUnlink ? activeActions.unlink : activeActions.delete)" />
+                            <t t-if="displayOptionalFields or hasX2ManyAction">
+                                <t t-if="hasX2ManyAction">
+                                    <button class="btn btn-sm btn-secondary" 
+                                        t-on-click="() => this.confirmDelete(record)">Delete</button>
+                                </t>
+                                <td t-else="" tabindex="-1" />
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="jekdoo_accordion.ListRenderer.Rows" owl="1">
+        <t t-if="list.isGrouped">
+            <div class="row">
+                <div class="col-lg-12">
+                    doesn't support groupping views
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+            <t t-foreach="list.records" t-as="record" t-key="record.id">
+                <t t-call="{{ constructor.recordRowTemplate }}"/>
+            </t>
+            <div class="row" t-if="displayRowCreates">
+                <div class="col-lg-12" >
+                    <t t-foreach="creates" t-as="create" t-key="create_index">
+                        <a
+                            t-if="create.type === 'create'"
+                            href="#"
+                            role="button"
+                            t-att-class="create_index !== 0 ? 'ml16' : ''"
+                            t-att-tabindex="props.list.editedRecord ? '-1' : '0'"
+                            t-on-click.stop.prevent="() => this.add({ context: create.context })"
+                        >
+                            <t t-esc="create.string"/>
+                        </a>
+                        <ViewButton
+                            t-if="create.type === 'button'"
+                            className="`${create.className} ${create_index !== 0 ? 'ml16' : ''}`"
+                            clickParams="create.clickParams"
+                            icon="create.icon"
+                            record="props.list"
+                            string="create.string"
+                            title="create.title"
+                            tabindex="props.list.editedRecord ? '-1' : '0'"
+                        />
+                    </t>                    
+                </div>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="jekdoo_accordion.ListRenderer" owl="1">
+        <style>
+            .card .card-header {
+                position: relative;
+            }
+            .card .card-header.card-header-show {
+                background-color: white;
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+            .card .card-header:hover {
+                background-color: #f0f5ef;
+            }
+            .card .card-header-show:hover {
+                background-color: #f3f8f2;
+            }
+
+            .card .card-header.card-header-show .item-title, .card .card-header.card-header-show .btn-link {
+                font-size: 18px;
+            }
+            .card .card-header .icon-arrow {
+                position: absolute;
+                right: 10px;
+                top: 10px;
+            }
+            .o_field_accordion {
+                width: 100%;
+            }
+            .button-wrapper {
+                border-top: 1px solid lightgray;
+                padding-top: 4px;
+                max-width: 160px;
+            }                
+        </style>
+
+        <table t-ref="table"></table>
+        <div
+            style="display:none;"
+            t-ref="root"
+        >
+            <t t-if="showNoContentHelper" t-call="web.ActionHelper">
+                <t t-set="noContentHelp" t-value="props.noContentHelp"/>
+            </t>
+        </div>
+
+        <div class="row-off mb-3">
+            <div class="col-lg-12 m-0 p-0">
+                <!-- ini kalo mau pake border  -->
+                <!-- <div class="shadow-sm border m-2 p-4 bg-white"> -->
+                <div class="shadow-sm  m-2 p-2 bg-white">
+                    <div class="accordion-parent" t-ref="accordion">
+                        <t t-call="{{ constructor.rowsTemplate }}">
+                            <t t-set="list" t-value="props.list"/>
+                        </t>
+                    </div>                
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
